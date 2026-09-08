@@ -1,0 +1,56 @@
+# Military Tower Defense 3D (MTD3D)
+
+A separate 3D evolution of Military Tower Defense, built from the original game's source. Command eleven historical fronts, from Verdun to Kyiv, with an angled 3D battlefield and spatial combat audio.
+
+## What's new
+
+- Real 3D units: tracked tanks, rotating turrets, recoiling guns, infantry with animated legs, artillery crews, missile vehicles, aircraft, airfields, and fortified HQs.
+- Directional lighting, soft shadows, textured terrain, raised battlefield edges, and 3D explosion debris.
+- Rotate, tilt, and zoom the camera; selection and placement follow the 3D view.
+- Distinct weapon bursts, cannon and artillery reports, missile launches, aircraft flybys, and propeller pulses, with stereo positioning, reverb, variation, and a shared output limiter.
+- Mute and volume controls, plus a separate MTD3D save slot.
+
+The original campaigns, combat balance, upgrade doctrines, support powers, and endless mode are retained. The original project has not been modified. See [source provenance](docs/PROVENANCE.md).
+
+## Run locally
+
+Install Node.js 22.13 or newer (Node 24 recommended), then:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173/ and deploy to Verdun. A browser with WebGL 2 and hardware acceleration is required. Sound starts after an interaction.
+
+## Controls
+
+- Choose a defense, then click clear ground to place it. Tanks snap to roads.
+- Click a unit or the HQ to inspect and upgrade it.
+- Use the camera buttons to rotate, zoom, switch tilt, or reset. Scroll over the battlefield to zoom toward the cursor.
+- Use the wave button, tactical pause, and 1x/2x/3x controls to manage the battle.
+- Campaign stars unlock later fronts and Armoury purchases. Progress stays on the current device, independently of the original game.
+
+## Build and check
+
+```sh
+npm test
+npm run lint
+npm run build
+npm start
+```
+
+`dist/` is a standalone static build, suitable for GitHub Pages or another static host. Relative asset paths support hosting in a repository subdirectory. This repository does not deploy or update the original game's Site.
+
+See [validation coverage and playtest notes](docs/VALIDATION.md). Models are stylized interpretations of military roles. Original terrain artwork and UI portraits remain in use.
+
+## Main files
+
+| File | Purpose |
+| --- | --- |
+| `app/game-client.tsx` | Original simulation, campaign UI, and 3D/audio integration |
+| `app/game-data.ts` | Original campaigns, hardware, enemies, and balance data |
+| `app/battlefield-3d.ts` | 3D scene, camera, picking, effects, and tactical overlay |
+| `app/unit-models.ts` | Shared and batched military unit geometry |
+| `app/battle-audio.ts` | Procedural spatial sound effects and audio lifecycle |
+| `app/main.tsx` | Standalone React entry point |

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["app/main.tsx", "app/game-client.tsx", "app/game-data.ts", "app/battlefield-3d.ts", "app/unit-models.ts", "app/battle-audio.ts", "vite.config.ts"]
+}
