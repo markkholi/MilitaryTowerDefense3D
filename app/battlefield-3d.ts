@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { ENEMIES, FAMILIES, FRONTS, HQ_DEFENSE_LEVELS, type Point } from "./game-data";
 import type { GameState, Position } from "./game-client";
 import { UnitWorkshop, type UnitModel } from "./unit-models";
@@ -27,6 +28,7 @@ export class Battlefield3D {
   private height = 650;
   private terrainReady = false;
   private effectGeometry = new THREE.IcosahedronGeometry(1, 1);
+  private detailedArtillery: THREE.Group | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -62,12 +64,39 @@ export class Battlefield3D {
     this.workshop.box(this.scene, [1002, 23, 652], [0, -13, 0], "#414738");
     this.workshop.box(this.scene, [1050, 6, 700], [0, -28, 0], "#222e28");
     this.addScenery();
+    this.loadDetailedArtillery();
     const ctx = overlayCanvas.getContext("2d");
     if (!ctx) throw new Error("The tactical overlay could not start.");
     this.overlay = ctx;
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(canvas); this.resize();
     canvas.addEventListener("wheel", this.onWheel, { passive: false });
+  }
+
+  private loadDetailedArtillery() {
+    // The supplied M-10 mesh is the artillery hero asset. Keep the procedural
+    // fallback in place until this optional network/local asset is ready.
+    new OBJLoader().load("./assets/artillery-m10.obj", (object) => {
+      const bounds = new THREE.Box3().setFromObject(object);
+      const size = bounds.getSize(new THREE.Vector3());
+      const center = bounds.getCenter(new THREE.Vector3());
+      object.position.sub(center);
+      const scale = 52 / Math.max(size.x, size.y, size.z, 0.001);
+      object.scale.setScalar(scale);
+      object.rotation.x = -Math.PI / 2;
+      const palette = ["#5d6655", "#707968", "#3a4039", "#252b27"];
+      let materialIndex = 0;
+      object.traverse((child) => {
+        if (!(child instanceof THREE.Mesh)) return;
+        child.material = new THREE.MeshStandardMaterial({
+          color: palette[materialIndex++ % palette.length], roughness: .72, metalness: .18,
+        });
+        child.castShadow = true; child.receiveShadow = true;
+      });
+      object.visible = false;
+      this.scene.add(object);
+      this.detailedArtillery = object;
+    }, undefined, () => { /* Procedural artillery remains active when the asset is unavailable. */ });
   }
 
   private resize() {
@@ -212,6 +241,22 @@ export class Battlefield3D {
     for (const position of game.positions) {
       const key = `p${position.id}`, e = this.entity(key, position.family, false, position.rank, position); alive.add(key);
       const { model } = e;
+      if (position.family === "artillery" && this.detailedArtillery) {
+        // Use the detailed M-10 mesh for the artillery body while retaining the
+        // simulation's existing mount and animation semantics.
+        if (e.model.root.userData.detailed !== this.detailedArtillery) {
+          const hero = this.detailedArtillery.clone(true);
+          hero.visible = true; hero.userData.point = { x: position.x, y: position.y };
+          hero.position.set(position.x - 500, 2, position.y - 325);
+          hero.rotation.y = -position.angle;
+          hero.userData.detailed = this.detailedArtillery;
+          this.scene.add(hero);
+          this.scene.remove(e.model.root);
+          e.model.root = hero;
+          e.model.heading = hero as unknown as THREE.Group;
+          e.model.turret = undefined; e.model.barrel = undefined; e.model.flash = undefined;
+        }
+      }
       if (position.moving) model.heading.rotation.y = -Math.atan2(position.moving.to.y - position.moving.from.y, position.moving.to.x - position.moving.from.x);
       if (model.turret) model.turret.rotation.y = -position.angle - model.heading.rotation.y;
       if (model.rotor) model.rotor.rotation.y = game.gameTime * 2;
