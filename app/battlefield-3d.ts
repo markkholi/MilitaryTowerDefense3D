@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ENEMIES, FAMILIES, FRONTS, HQ_DEFENSE_LEVELS, type Point } from "./game-data";
 import type { GameState, Position } from "./game-client";
 import { UnitWorkshop, type UnitModel } from "./unit-models";
@@ -76,20 +76,16 @@ export class Battlefield3D {
   private loadDetailedArtillery() {
     // The supplied M-10 mesh is the artillery hero asset. Keep the procedural
     // fallback in place until this optional network/local asset is ready.
-    new OBJLoader().load("./assets/artillery-m10.obj", (object) => {
-      const bounds = new THREE.Box3().setFromObject(object);
-      const size = bounds.getSize(new THREE.Vector3());
-      const center = bounds.getCenter(new THREE.Vector3());
-      object.position.sub(center);
-      const scale = 52 / Math.max(size.x, size.y, size.z, 0.001);
-      object.scale.setScalar(scale);
-      object.rotation.x = -Math.PI / 2;
-      const palette = ["#5d6655", "#707968", "#3a4039", "#252b27"];
-      let materialIndex = 0;
+    new GLTFLoader().load("./assets/artillery/m10-howitzer.glb", ({ scene: object }) => {
+      // The preparation script preserves the source's four material groups and
+      // exports Y-up transforms, so the source mesh arrives ready for shadows.
       object.traverse((child) => {
         if (!(child instanceof THREE.Mesh)) return;
-        child.material = new THREE.MeshStandardMaterial({
-          color: palette[materialIndex++ % palette.length], roughness: .72, metalness: .18,
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((material) => {
+          if (!(material instanceof THREE.MeshStandardMaterial)) return;
+          material.roughness = Math.max(material.roughness, .72);
+          material.metalness = Math.min(material.metalness, .3);
         });
         child.castShadow = true; child.receiveShadow = true;
       });
