@@ -13,7 +13,7 @@ The original `app/game-client.tsx` simulation and `app/game-data.ts` campaign de
 
 MTD3D replaces battlefield sprites with locally generated Three.js meshes and replaces the original per-sound audio routing with a shared spatial mix. Artillery additionally uses the supplied 152mm M-10 Howitzer OBJ as a detailed hero mesh, with a procedural fallback. Its four supplied texture JPGs are retained alongside the model; the OBJ's absent MTL is intentionally replaced by authored physically based materials. MTD3D uses a standalone React/Vite entry point instead of the original Sites server runtime. Some unused starter components and server template files remain from the original source, but the MTD3D build uses `app/main.tsx` and `vite.config.ts` and requires no server, database, or ChatGPT account.
 
-New unit meshes other than artillery, Air Defense, and player tanks are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
+New unit meshes other than artillery, Air Defense, player tanks, and AT Posts are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
 
 ## Supplied MIM-104 Patriot model
 
@@ -43,6 +43,20 @@ Reproduction requires Node.js with the project's Three.js dependency and Python 
 
 ```sh
 node scripts/prepare-abrams.mjs "path/to/M1A2_Woodland.usdz" "path/to/python"
+```
+
+## Supplied anti-tank turret model
+
+On September 10, 2026, the owner supplied `anti-tank-turret.zip`. Its nested `source/model.zip` contains a Collada scene and fifteen 2048 × 2048 texture maps. This model replaces the AT Post family at all upgrade levels, with its fixed stabilizer base, independently aiming armored dome, and recoiling cannon. Historical upgrade names and campaign balance remain unchanged.
+
+`scripts/prepare-anti-tank.py` reads the supplied archive without modifying or extracting it. It preserves all 2,870 triangles, source normals and tangent directions, and batches the body panel with the base for three indexed meshes. The 60-unit length fits the battlefield; the collar is the turret's rotation axis, and the shot marker follows the barrel tip. Bounds are approximately 60 × 38.3 × 51.1 game units. The runtime shares geometry and materials among independent instances, filters the supplied surface maps, and provides outdoor reflections and a soft muzzle flash. The build-menu portrait is rendered from this model.
+
+The source color JPGs remain byte-identical. Normal maps preserve their source resolution with a lossless green-channel inversion matching the converted UV/tangent handedness. Occlusion, roughness, and metalness are packed without pixel changes into glTF's red, green, and blue channels. All nine output textures retain 2K resolution. The geometry and textures total approximately 29.4 MB before the portrait. Repeating conversion produced identical output hashes. The supplied ZIP is unchanged and is not redistributed.
+
+Reproduction requires Python with NumPy and Pillow:
+
+```sh
+python scripts/prepare-anti-tank.py "path/to/anti-tank-turret.zip"
 ```
 
 Original assets retain their existing ownership and terms; this repository does not grant a new license to third-party material. Three.js and other libraries retain their respective licenses. New sound effects are synthesized at runtime and contain no downloaded recordings.

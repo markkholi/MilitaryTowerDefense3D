@@ -4,8 +4,8 @@ import { disposeModelResources } from "./patriot-model";
 import { muzzleFlash, outdoorEnvironment } from "./imported-gun-effects";
 import type { UnitModel } from "./unit-models";
 
-/** Shared textured asset with independent hull, turret and gun transforms. */
-export class AbramsModels {
+/** Shared textured asset with independent turret and recoiling gun transforms. */
+export class AntiTankModels {
   private prototype: THREE.Group | null = null;
   private disposed = false;
 
@@ -13,14 +13,14 @@ export class AbramsModels {
 
   async load(anisotropy: number, loader = new GLTFLoader()) {
     try {
-      const { scene } = await loader.loadAsync("./assets/abrams/m1a2-woodland.glb");
+      const { scene } = await loader.loadAsync("./assets/anti-tank/anti-tank-turret.glb");
       if (this.disposed) { disposeModelResources(scene); return; }
       const muzzle = scene.getObjectByName("muzzle");
       if (!scene.getObjectByName("turret") || !scene.getObjectByName("recoil") || !muzzle) {
         disposeModelResources(scene);
-        throw new Error("Abrams asset is missing its turret or gun rig");
+        throw new Error("Anti-tank asset is missing its turret or gun rig");
       }
-      const environment = outdoorEnvironment("Abrams");
+      const environment = outdoorEnvironment("Anti-tank");
       scene.traverse(child => {
         if (!(child instanceof THREE.Mesh)) return;
         child.castShadow = true; child.receiveShadow = true;
@@ -36,14 +36,14 @@ export class AbramsModels {
       muzzle.add(muzzleFlash());
       this.prototype = scene;
     } catch (error) {
-      if (!this.disposed) console.warn("Abrams model unavailable; using the standard tank model.", error);
+      if (!this.disposed) console.warn("Anti-tank model unavailable; using the standard anti-tank model.", error);
     }
   }
 
   create(): UnitModel | null {
     if (!this.prototype || this.disposed) return null;
     const root = new THREE.Group(), heading = new THREE.Group(), asset = this.prototype.clone(true);
-    root.name = "M1A2 woodland tank"; root.userData.abrams = true;
+    root.name = "Anti-tank turret"; root.userData.antiTank = true;
     root.add(heading); heading.add(asset);
     const barrel = asset.getObjectByName("recoil");
     return {

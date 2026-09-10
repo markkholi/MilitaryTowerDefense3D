@@ -8,6 +8,7 @@ A separate 3D evolution of Military Tower Defense, built from the original game'
 - Artillery uses the supplied textured 152mm M-10 Howitzer mesh with physically based materials and shadows, with a procedural fallback while the asset loads.
 - Air Defense uses the supplied textured MIM-104 Patriot model: weathered launcher, trailer, wheels, stabilizers, independently aiming mount, and missiles with exhaust trails and aerial impact effects. The build menu displays a portrait rendered from the same model.
 - Tanks use the supplied M1A2 Woodland Abrams model, with its detailed surface textures, independent turret, recoiling cannon, and muzzle flash. Hulls follow the road when deployed and retain their heading through upgrades.
+- AT Posts use the supplied anti-tank turret with its textured stabilizer base, independently aiming armored dome, recoiling barrel, and muzzle-origin firing effects. Full 2K surface maps preserve the painted metal and wear.
 - Directional lighting, soft shadows, textured terrain, raised battlefield edges, and 3D explosion debris.
 - Rotate, tilt, and zoom the camera; selection and placement follow the 3D view.
 - Distinct weapon bursts, cannon and artillery reports, missile launches, aircraft flybys, and propeller pulses, with stereo positioning, reverb, variation, and a shared output limiter.
@@ -45,7 +46,7 @@ npm start
 
 `dist/` is a standalone static build, suitable for GitHub Pages or another static host. Relative asset paths support hosting in a repository subdirectory. This repository does not deploy or update the original game's Site.
 
-See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air Defense, and player tanks use supplied detailed models; the remaining units are stylized interpretations of military roles. Original terrain artwork and the other UI portraits remain in use.
+See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air Defense, player tanks, and AT Posts use supplied detailed models; the remaining units are stylized interpretations of military roles. Original terrain artwork and the other UI portraits remain in use.
 
 ## Main files
 
@@ -57,6 +58,8 @@ See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air
 | `app/unit-models.ts` | Shared and batched military unit geometry |
 | `app/patriot-model.ts` | Patriot loading, independent instances, and asset cleanup |
 | `app/abrams-model.ts` | Abrams materials, turret and gun animation, and asset lifecycle |
+| `app/anti-tank-model.ts` | Anti-tank model loading, independent aiming and recoil, and asset lifecycle |
+| `app/imported-gun-effects.ts` | Shared soft muzzle flash and outdoor reflection helpers |
 | `app/missile-flight.ts` | Air-defense missile flight and exhaust visuals |
 | `app/battle-audio.ts` | Procedural spatial sound effects and audio lifecycle |
 | `app/main.tsx` | Standalone React entry point |

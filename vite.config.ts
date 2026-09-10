@@ -7,7 +7,11 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
-  server: { host: '127.0.0.1', port: 5173, strictPort: true },
+  server: {
+    host: '127.0.0.1', port: 5173, strictPort: true,
+    // Conversion archives can be locked during extraction on Windows/OneDrive.
+    watch: { ignored: ['**/outputs/**', '**/work/**'] },
+  },
   build: {
     rolldownOptions: {
       output: {

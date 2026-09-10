@@ -83,7 +83,7 @@ const SAVE_KEY = "military-tower-defense-3d-save-v1";
 const UNIT_ART: Record<FamilyKey, { src: string; drawSize: number }> = {
   mg: { src: "./assets/mg-nest-topdown.png", drawSize: 76 },
   artillery: { src: "./assets/artillery-m777-topdown.png", drawSize: 86 },
-  at: { src: "./assets/at-tow-topdown.png", drawSize: 76 },
+  at: { src: "./assets/anti-tank/anti-tank-portrait.png", drawSize: 76 },
   air: { src: "./assets/patriot/patriot-portrait.png", drawSize: 84 },
   airbase: { src: "./assets/defender-airbase-topdown.png", drawSize: 112 },
   tank: { src: "./assets/abrams/abrams-portrait.png", drawSize: 82 },
