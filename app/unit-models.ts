@@ -5,11 +5,13 @@ export type UnitModel = {
   root: THREE.Group;
   heading: THREE.Group;
   turret?: THREE.Object3D;
-  barrel?: THREE.Group;
+  barrel?: THREE.Object3D;
+  barrelRestX?: number;
   legs: THREE.Group[];
   rotor?: THREE.Group;
   flash?: THREE.Mesh;
   launchOrigin?: THREE.Object3D;
+  muzzle?: THREE.Object3D;
 };
 
 /** Shared geometry/materials keep large waves inexpensive. All dimensions use
@@ -136,7 +138,7 @@ export class UnitWorkshop {
     return {
       root, heading: group(prototype.heading), legs: prototype.legs.map(group),
       turret: prototype.turret ? copies[originals.indexOf(prototype.turret)] : undefined,
-      barrel: prototype.barrel ? group(prototype.barrel) : undefined,
+      barrel: prototype.barrel ? copies[originals.indexOf(prototype.barrel)] : undefined,
       rotor: prototype.rotor ? group(prototype.rotor) : undefined,
       flash: prototype.flash ? copies[originals.indexOf(prototype.flash)] as THREE.Mesh : undefined,
     };

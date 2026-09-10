@@ -86,7 +86,7 @@ const UNIT_ART: Record<FamilyKey, { src: string; drawSize: number }> = {
   at: { src: "./assets/at-tow-topdown.png", drawSize: 76 },
   air: { src: "./assets/patriot/patriot-portrait.png", drawSize: 84 },
   airbase: { src: "./assets/defender-airbase-topdown.png", drawSize: 112 },
-  tank: { src: "./assets/m1a1-abrams-topdown.png", drawSize: 82 },
+  tank: { src: "./assets/abrams/abrams-portrait.png", drawSize: 82 },
 };
 
 type SortieKind = "interceptor" | "multirole" | "strike" | "gunship";

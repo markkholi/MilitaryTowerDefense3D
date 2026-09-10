@@ -13,7 +13,7 @@ The original `app/game-client.tsx` simulation and `app/game-data.ts` campaign de
 
 MTD3D replaces battlefield sprites with locally generated Three.js meshes and replaces the original per-sound audio routing with a shared spatial mix. Artillery additionally uses the supplied 152mm M-10 Howitzer OBJ as a detailed hero mesh, with a procedural fallback. Its four supplied texture JPGs are retained alongside the model; the OBJ's absent MTL is intentionally replaced by authored physically based materials. MTD3D uses a standalone React/Vite entry point instead of the original Sites server runtime. Some unused starter components and server template files remain from the original source, but the MTD3D build uses `app/main.tsx` and `vite.config.ts` and requires no server, database, or ChatGPT account.
 
-New unit meshes other than artillery and Air Defense are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
+New unit meshes other than artillery, Air Defense, and player tanks are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
 
 ## Supplied MIM-104 Patriot model
 
@@ -27,6 +27,22 @@ To reproduce the model conversion after extracting the supplied archive:
 
 ```sh
 node scripts/prepare-patriot.mjs "path/to/MIM-104 Patriot Air Defense System.obj" "path/to/textures"
+```
+
+## Supplied M1A2 Woodland Abrams model
+
+On September 9, 2026, the owner supplied `M1A2_Woodland.usdz`. It contains a binary USD scene and thirteen texture JPGs. The converted asset replaces the player Tank family at every upgrade level. Enemy vehicles keep their existing silhouettes; tank damage, movement speed, cost, and historical upgrade names retain the original campaign progression.
+
+The game uses separate hull, turret, and cannon transforms to preserve aiming during redeployment. The cannon recoils along its own axis, and muzzle flash and shot traces originate at the barrel. All instances share the imported geometry and textures; per-tank transforms stay independent. A procedural model remains available while the detailed asset loads or if loading fails. The supplied USDZ is read-only and is not redistributed as an archive.
+
+`scripts/prepare-abrams.mjs` and `scripts/prepare-abrams-textures.py` preserve all 178,871 source triangles in five indexed meshes, neutralize the source turret's baked angle, and set the tank's overall length to 78 game units. The converted files are in `public/assets/abrams/`. Source color JPGs are copied unchanged; normal and scalar maps retain their source resolutions and are stored losslessly after conversion. The converter pairs the flipped texture V coordinate with an inverted tangent-space normal Y channel, and packs roughness/metalness into glTF's green/blue channels. It raises the nearly black tread roughness map into a dry track range and reduces painted armor's metallic factor. The runtime adds a shared soft sky/ground reflection texture. The menu portrait is rendered from this same model.
+
+The model and ten texture files total approximately 25.3 MB before the portrait. Full texture resolution and geometry are retained for close inspection; a new battle initially shows the procedural fallback if the asset is still loading.
+
+Reproduction requires Node.js with the project's Three.js dependency and Python with Pillow:
+
+```sh
+node scripts/prepare-abrams.mjs "path/to/M1A2_Woodland.usdz" "path/to/python"
 ```
 
 Original assets retain their existing ownership and terms; this repository does not grant a new license to third-party material. Three.js and other libraries retain their respective licenses. New sound effects are synthesized at runtime and contain no downloaded recordings.
