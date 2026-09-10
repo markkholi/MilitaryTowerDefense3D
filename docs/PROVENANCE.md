@@ -11,7 +11,7 @@ The original source was fetched read-only. Its deployment identity, credentials,
 
 The original `app/game-client.tsx` simulation and `app/game-data.ts` campaign definitions are the starting point. All eleven campaigns, the six defense families, eight enemy classes, upgrade doctrines, HQ upgrades, support powers, and endless mode are retained. The original campaign data file is unchanged. Existing terrain artwork and UI portraits are retained in `public/assets`.
 
-MTD3D replaces battlefield sprites with locally generated Three.js meshes and replaces the original per-sound audio routing with a shared spatial mix. Artillery additionally uses the supplied 152mm M-10 Howitzer OBJ as a detailed hero mesh, with a procedural fallback. Its four supplied texture JPGs are retained alongside the model; the OBJ's absent MTL is intentionally replaced by authored physically based materials. MTD3D uses a standalone React/Vite entry point instead of the original Sites server runtime. Some unused starter components and server template files remain from the original source, but the MTD3D build uses `app/main.tsx` and `vite.config.ts` and requires no server, database, or ChatGPT account.
+MTD3D replaces battlefield sprites with locally generated Three.js meshes and replaces the original per-sound audio routing with a shared spatial mix. The initial artillery pass used the supplied 152mm M-10 Howitzer OBJ as a detailed hero mesh. It has since been replaced by the tracked artillery model described below, with a procedural fallback. Its four supplied texture JPGs are retained alongside the model; the OBJ's absent MTL is intentionally replaced by authored physically based materials. MTD3D uses a standalone React/Vite entry point instead of the original Sites server runtime. Some unused starter components and server template files remain from the original source, but the MTD3D build uses `app/main.tsx` and `vite.config.ts` and requires no server, database, or ChatGPT account.
 
 New unit meshes other than artillery, Air Defense, player tanks, AT Posts, and MG Nests are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
 
@@ -71,6 +71,20 @@ Reproduce the adaptation with Node.js:
 
 ```sh
 node scripts/prepare-machine-gun.mjs "path/to/auto_turret_machine_gun.glb"
+```
+
+## Supplied Artillery military weapon
+
+The owner supplied `artillery_military_weapon.glb`, whose embedded metadata credits [Artillery military weapon](https://sketchfab.com/3d-models/artillery-military-weapon-d6a607960dc84a9dbbaee99a9aaf6b3e) by [Javier Martín Hidalgo](https://sketchfab.com/Jj.Mmhh), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). This tracked model replaces the earlier M-10 artillery at all upgrade levels. The source credit remains embedded and is linked from the Field manual. Historical upgrade names and combat balance remain unchanged.
+
+`scripts/prepare-artillery.mjs` groups connected rigid parts by the chassis, upper mount, and main gun. The adapted asset retains all 76,884 triangles, original vertex attributes, five materials, and fifteen embedded 2048 × 2048 texture images. Triangle attribute fingerprints match the supplied model, and image byte hashes are unchanged. Eight indexed meshes provide separate aiming and recoil without dropping source detail. The whole asset is approximately 12.6 MB and 80 game units long.
+
+The tracked chassis stays planted; the complete upper mount aims about its vertical axis. The 5,056-triangle main barrel recoils along its authored 14.73-degree elevation. The muzzle marker is centered on the front bore face, so the flash follows the barrel and shot traces begin at the gun. Outdoor reflection lighting and filtered texture sampling are applied at runtime. The portrait is rendered from the same asset. The original download is unchanged; the earlier M-10 preparation files remain as historical assets but are no longer loaded by the game.
+
+Reproduce the adaptation with Node.js and the project's Three.js dependency:
+
+```sh
+node scripts/prepare-artillery.mjs "path/to/artillery_military_weapon.glb"
 ```
 
 Original assets retain their existing ownership and terms; this repository does not grant a new license to third-party material. Three.js and other libraries retain their respective licenses. New sound effects are synthesized at runtime and contain no downloaded recordings.

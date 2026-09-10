@@ -5,7 +5,7 @@ A separate 3D evolution of Military Tower Defense, built from the original game'
 ## What's new
 
 - Real 3D units: tracked tanks, rotating turrets, recoiling guns, infantry with animated legs, artillery crews, missile vehicles, aircraft, airfields, and fortified HQs.
-- Artillery uses the supplied textured 152mm M-10 Howitzer mesh with physically based materials and shadows, with a procedural fallback while the asset loads.
+- Artillery uses the supplied tracked Artillery military weapon model, with all fifteen 2K texture maps, independent aiming, recoil along the elevated barrel, shadows, and a muzzle flash. A procedural fallback remains available while loading.
 - Air Defense uses the supplied textured MIM-104 Patriot model: weathered launcher, trailer, wheels, stabilizers, independently aiming mount, and missiles with exhaust trails and aerial impact effects. The build menu displays a portrait rendered from the same model.
 - Tanks use the supplied M1A2 Woodland Abrams model, with its detailed surface textures, independent turret, recoiling cannon, and muzzle flash. Hulls follow the road when deployed and retain their heading through upgrades.
 - AT Posts use the supplied anti-tank turret with its textured stabilizer base, independently aiming armored dome, recoiling barrel, and muzzle-origin firing effects. Full 2K surface maps preserve the painted metal and wear.
@@ -57,6 +57,7 @@ See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air
 | `app/game-data.ts` | Original campaigns, hardware, enemies, and balance data |
 | `app/battlefield-3d.ts` | 3D scene, camera, picking, effects, and tactical overlay |
 | `app/unit-models.ts` | Shared and batched military unit geometry |
+| `app/artillery-model.ts` | Tracked artillery loading, aiming, angled recoil, and asset lifecycle |
 | `app/patriot-model.ts` | Patriot loading, independent instances, and asset cleanup |
 | `app/abrams-model.ts` | Abrams materials, turret and gun animation, and asset lifecycle |
 | `app/anti-tank-model.ts` | Anti-tank model loading, independent aiming and recoil, and asset lifecycle |
@@ -67,3 +68,5 @@ See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air
 | `app/main.tsx` | Standalone React entry point |
 
 The Auto Turret Machine Gun model is by [NghiaNguyeen](https://sketchfab.com/kiroy2002), under CC BY 4.0. See [model attribution and adaptation details](public/assets/machine-gun/credits.html).
+
+The artillery model is [Artillery military weapon](https://sketchfab.com/3d-models/artillery-military-weapon-d6a607960dc84a9dbbaee99a9aaf6b3e) by [Javier Martín Hidalgo](https://sketchfab.com/Jj.Mmhh), under CC BY 4.0. See [artillery attribution](public/assets/artillery/credits.html).

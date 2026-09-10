@@ -1,13 +1,13 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ENEMIES, FAMILIES, FRONTS, HQ_DEFENSE_LEVELS, type Point } from "./game-data";
 import type { GameState, Position } from "./game-client";
 import { UnitWorkshop, type UnitModel } from "./unit-models";
-import { PatriotModels, disposeModelResources } from "./patriot-model";
+import { PatriotModels } from "./patriot-model";
 import { MissileFlight } from "./missile-flight";
 import { AbramsModels } from "./abrams-model";
 import { AntiTankModels } from "./anti-tank-model";
 import { MachineGunModels } from "./machine-gun-model";
+import { ArtilleryModels } from "./artillery-model";
 
 type DrawEntry = { model: UnitModel; kind: string; rank: number; firedAt: number; lastShotId?: number; muzzleIndex?: number };
 type RangeStats = { range: number; minRange: number };
@@ -33,12 +33,11 @@ export class Battlefield3D {
   private height = 650;
   private terrainReady = false;
   private effectGeometry = new THREE.IcosahedronGeometry(1, 1);
-  private detailedArtillery: THREE.Group | null = null;
+  private artilleryModels = new ArtilleryModels();
   private patriots = new PatriotModels();
   private abrams = new AbramsModels();
   private antiTanks = new AntiTankModels();
   private machineGuns = new MachineGunModels();
-  private disposed = false;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -74,7 +73,7 @@ export class Battlefield3D {
     this.workshop.box(this.scene, [1002, 23, 652], [0, -13, 0], "#414738");
     this.workshop.box(this.scene, [1050, 6, 700], [0, -28, 0], "#222e28");
     this.addScenery();
-    this.loadDetailedArtillery();
+    void this.artilleryModels.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     void this.patriots.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     void this.abrams.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     void this.antiTanks.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
@@ -85,29 +84,6 @@ export class Battlefield3D {
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(canvas); this.resize();
     canvas.addEventListener("wheel", this.onWheel, { passive: false });
-  }
-
-  private loadDetailedArtillery() {
-    // The supplied M-10 mesh is the artillery hero asset. Keep the procedural
-    // fallback in place until this optional network/local asset is ready.
-    new GLTFLoader().load("./assets/artillery/m10-howitzer.glb", ({ scene: object }) => {
-      if (this.disposed) { disposeModelResources(object); return; }
-      // The preparation script preserves the source's four material groups and
-      // exports Y-up transforms, so the source mesh arrives ready for shadows.
-      object.traverse((child) => {
-        if (!(child instanceof THREE.Mesh)) return;
-        const materials = Array.isArray(child.material) ? child.material : [child.material];
-        materials.forEach((material) => {
-          if (!(material instanceof THREE.MeshStandardMaterial)) return;
-          material.roughness = Math.max(material.roughness, .72);
-          material.metalness = Math.min(material.metalness, .3);
-        });
-        child.castShadow = true; child.receiveShadow = true;
-      });
-      object.visible = false;
-      this.scene.add(object);
-      this.detailedArtillery = object;
-    }, undefined, () => { /* Procedural artillery remains active when the asset is unavailable. */ });
   }
 
   private resize() {
@@ -205,8 +181,8 @@ export class Battlefield3D {
   private entity(key: string, kind: string, enemy: boolean, rank: number, point: Point, altitude = 0) {
     let entry = this.entities.get(key);
     let previousHeading: THREE.Euler | undefined;
-    const library = !enemy ? kind === "air" ? this.patriots : kind === "tank" ? this.abrams : kind === "at" ? this.antiTanks : kind === "mg" ? this.machineGuns : null : null;
-    const detailFlag = kind === "tank" ? "abrams" : kind === "at" ? "antiTank" : kind === "mg" ? "machineGun" : "patriot";
+    const library = !enemy ? kind === "air" ? this.patriots : kind === "tank" ? this.abrams : kind === "at" ? this.antiTanks : kind === "mg" ? this.machineGuns : kind === "artillery" ? this.artilleryModels : null : null;
+    const detailFlag = kind === "tank" ? "abrams" : kind === "at" ? "antiTank" : kind === "mg" ? "machineGun" : kind === "artillery" ? "artillery" : "patriot";
     if (entry && (entry.kind !== kind || entry.rank !== rank)) {
       previousHeading = entry.model.heading.rotation.clone();
       this.scene.remove(entry.model.root); this.entities.delete(key); entry = undefined;
@@ -267,22 +243,6 @@ export class Battlefield3D {
     for (const position of game.positions) {
       const key = `p${position.id}`, e = this.entity(key, position.family, false, position.rank, position); alive.add(key);
       const { model } = e;
-      if (position.family === "artillery" && this.detailedArtillery) {
-        // Use the detailed M-10 mesh for the artillery body while retaining the
-        // simulation's existing mount and animation semantics.
-        if (e.model.root.userData.detailed !== this.detailedArtillery) {
-          const hero = this.detailedArtillery.clone(true);
-          hero.visible = true; hero.userData.point = { x: position.x, y: position.y };
-          hero.position.set(position.x - 500, 2, position.y - 325);
-          hero.rotation.y = -position.angle;
-          hero.userData.detailed = this.detailedArtillery;
-          this.scene.add(hero);
-          this.scene.remove(e.model.root);
-          e.model.root = hero;
-          e.model.heading = hero as unknown as THREE.Group;
-          e.model.turret = undefined; e.model.barrel = undefined; e.model.flash = undefined;
-        }
-      }
       if (position.moving) model.heading.rotation.y = -Math.atan2(position.moving.to.y - position.moving.from.y, position.moving.to.x - position.moving.from.x);
       if (model.turret) model.turret.rotation.y = -position.angle - model.heading.rotation.y;
       if (model.rotor) model.rotor.rotation.y = game.gameTime * 2;
@@ -469,14 +429,14 @@ export class Battlefield3D {
   }
 
   dispose() {
-    this.disposed = true;
     this.observer.disconnect(); this.canvas.removeEventListener("wheel", this.onWheel);
     // Imported clones share their resources with a prototype owned by the library.
-    for (const entry of this.entities.values()) if (entry.model.root.userData.patriot || entry.model.root.userData.abrams || entry.model.root.userData.antiTank || entry.model.root.userData.machineGun) this.scene.remove(entry.model.root);
+    for (const entry of this.entities.values()) if (entry.model.root.userData.patriot || entry.model.root.userData.abrams || entry.model.root.userData.antiTank || entry.model.root.userData.machineGun || entry.model.root.userData.artillery) this.scene.remove(entry.model.root);
     this.patriots.dispose();
     this.abrams.dispose();
     this.antiTanks.dispose();
     this.machineGuns.dispose();
+    this.artilleryModels.dispose();
     this.scene.traverse(object => {
       if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
         object.geometry.dispose();
