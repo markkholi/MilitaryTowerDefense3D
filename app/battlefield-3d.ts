@@ -3,6 +3,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ENEMIES, FAMILIES, FRONTS, HQ_DEFENSE_LEVELS, type Point } from "./game-data";
 import type { GameState, Position } from "./game-client";
 import { UnitWorkshop, type UnitModel } from "./unit-models";
+import { PatriotModels, disposeModelResources } from "./patriot-model";
+import { MissileFlight } from "./missile-flight";
 
 type DrawEntry = { model: UnitModel; kind: string; rank: number; firedAt: number };
 type RangeStats = { range: number; minRange: number };
@@ -29,6 +31,8 @@ export class Battlefield3D {
   private terrainReady = false;
   private effectGeometry = new THREE.IcosahedronGeometry(1, 1);
   private detailedArtillery: THREE.Group | null = null;
+  private patriots = new PatriotModels();
+  private disposed = false;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -41,7 +45,7 @@ export class Battlefield3D {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.3;
@@ -65,6 +69,7 @@ export class Battlefield3D {
     this.workshop.box(this.scene, [1050, 6, 700], [0, -28, 0], "#222e28");
     this.addScenery();
     this.loadDetailedArtillery();
+    void this.patriots.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     const ctx = overlayCanvas.getContext("2d");
     if (!ctx) throw new Error("The tactical overlay could not start.");
     this.overlay = ctx;
@@ -77,6 +82,7 @@ export class Battlefield3D {
     // The supplied M-10 mesh is the artillery hero asset. Keep the procedural
     // fallback in place until this optional network/local asset is ready.
     new GLTFLoader().load("./assets/artillery/m10-howitzer.glb", ({ scene: object }) => {
+      if (this.disposed) { disposeModelResources(object); return; }
       // The preparation script preserves the source's four material groups and
       // exports Y-up transforms, so the source mesh arrives ready for shadows.
       object.traverse((child) => {
@@ -191,8 +197,15 @@ export class Battlefield3D {
     let entry = this.entities.get(key);
     if (entry && (entry.kind !== kind || entry.rank !== rank)) { this.scene.remove(entry.model.root); this.entities.delete(key); entry = undefined; }
     if (!entry) {
-      entry = { model: this.workshop.create(kind, enemy, rank), kind, rank, firedAt: -10 };
+      entry = { model: (kind === "air" && !enemy ? this.patriots.create() : null) ?? this.workshop.create(kind, enemy, rank), kind, rank, firedAt: -10 };
       this.entities.set(key, entry); this.scene.add(entry.model.root);
+    }
+    if (kind === "air" && !enemy && !entry.model.root.userData.patriot && this.patriots.ready) {
+      const replacement = this.patriots.create()!;
+      replacement.heading.rotation.copy(entry.model.heading.rotation);
+      this.scene.remove(entry.model.root);
+      entry.model = replacement;
+      this.scene.add(replacement.root);
     }
     entry.model.root.position.set(point.x - 500, altitude, point.y - 325);
     entry.model.root.userData.point = { x: point.x, y: point.y };
@@ -288,12 +301,23 @@ export class Battlefield3D {
   private renderEffects(game: GameState) {
     const active = new Set<number>();
     for (const effect of game.effects) {
+      if (effect.age < 0) continue; // Impact visuals wait for the missile to arrive.
       if (!["shot", "blast", "air-blast", "hit"].includes(effect.type)) continue;
       active.add(effect.id);
       let group = this.effectObjects.get(effect.id);
       if (!group) {
         group = new THREE.Group(); this.effectObjects.set(effect.id, group); this.scene.add(group);
-        if (effect.type === "shot") {
+        if (effect.type === "shot" && effect.weapon === "air") {
+          const source = this.entities.get(`p${effect.sourceId}`)?.model;
+          const origin = new THREE.Vector3(effect.x - 500, 30, effect.y - 325);
+          const direction = new THREE.Vector3((effect.tx ?? effect.x) - effect.x, 100, (effect.ty ?? effect.y) - effect.y).normalize();
+          if (source?.launchOrigin) {
+            source.root.updateWorldMatrix(true, true);
+            source.launchOrigin.getWorldPosition(origin);
+            direction.set(1, 0, 0).applyQuaternion(source.launchOrigin.getWorldQuaternion(new THREE.Quaternion()));
+          }
+          group.add(new MissileFlight(origin, direction, new THREE.Vector3((effect.tx ?? effect.x) - 500, 57, (effect.ty ?? effect.y) - 325)));
+        } else if (effect.type === "shot") {
           const geometry = new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(effect.x - 500, 19, effect.y - 325),
             new THREE.Vector3((effect.tx ?? effect.x) - 500, 13, (effect.ty ?? effect.y) - 325),
@@ -304,11 +328,12 @@ export class Battlefield3D {
             const mesh = new THREE.Mesh(this.effectGeometry, new THREE.MeshBasicMaterial({ color: i % 3 ? "#ffb14d" : "#7b8275", transparent: true, depthWrite: false }));
             group.add(mesh);
           }
-          group.position.set(effect.x - 500, 5, effect.y - 325);
+          group.position.set(effect.x - 500, effect.altitude ?? 5, effect.y - 325);
         }
       }
       const t = Math.min(1, effect.age / effect.duration);
       group.children.forEach((child, i) => {
+        if (child instanceof MissileFlight) { child.update(t); return; }
         const mesh = child as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
         mesh.material.opacity = Math.max(0, (1 - t) * .85);
         if (effect.type !== "shot") {
@@ -320,7 +345,15 @@ export class Battlefield3D {
       });
     }
     for (const [id, group] of this.effectObjects) if (!active.has(id)) {
-      group.children.forEach(child => { const mesh = child as THREE.Mesh; (mesh.material as THREE.Material).dispose(); if (mesh.geometry !== this.effectGeometry) mesh.geometry.dispose(); });
+      const geometries = new Set<THREE.BufferGeometry>();
+      const materials = new Set<THREE.Material>();
+      group.traverse(child => {
+        if (!(child instanceof THREE.Mesh || child instanceof THREE.Line)) return;
+        for (const material of Array.isArray(child.material) ? child.material : [child.material]) materials.add(material);
+        if (child.geometry !== this.effectGeometry) geometries.add(child.geometry);
+      });
+      materials.forEach(material => material.dispose());
+      geometries.forEach(geometry => geometry.dispose());
       this.scene.remove(group); this.effectObjects.delete(id);
     }
   }
@@ -349,7 +382,7 @@ export class Battlefield3D {
     if (game.hqSelected) this.ring(this.hq, 47, "#ffe09c");
     for (const p of game.positions) {
       this.ring(p, p.family === "airbase" ? 49 : 27, p.id === game.selectedId ? "#ffe19a" : "#92b29c88");
-      this.health(p, p.family === "airbase" ? 61 : 52, p.hp, p.maxHp, "#b3dda4", `${FAMILIES[p.family].short} ${p.rank + 1}${p.veteran ? "+" : ""}`);
+      this.health(p, p.family === "airbase" || p.family === "air" ? 64 : 52, p.hp, p.maxHp, "#b3dda4", `${FAMILIES[p.family].short} ${p.rank + 1}${p.veteran ? "+" : ""}`);
     }
     this.health(this.hq, 80, game.hq, game.maxHq, "#e8d18d", `HQ · ${game.hqDefenseLevel}`);
     for (const e of game.enemies) if (!e.dead) this.health(e, ENEMIES[e.type].air ? 80 : 40, e.hp, e.maxHp, "#f2aa86");
@@ -404,7 +437,11 @@ export class Battlefield3D {
   }
 
   dispose() {
+    this.disposed = true;
     this.observer.disconnect(); this.canvas.removeEventListener("wheel", this.onWheel);
+    // Imported clones share their resources with a prototype owned by the library.
+    for (const entry of this.entities.values()) if (entry.model.root.userData.patriot) this.scene.remove(entry.model.root);
+    this.patriots.dispose();
     this.scene.traverse(object => {
       if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
         object.geometry.dispose();

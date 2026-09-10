@@ -4,11 +4,12 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 export type UnitModel = {
   root: THREE.Group;
   heading: THREE.Group;
-  turret?: THREE.Group;
+  turret?: THREE.Object3D;
   barrel?: THREE.Group;
   legs: THREE.Group[];
   rotor?: THREE.Group;
   flash?: THREE.Mesh;
+  launchOrigin?: THREE.Object3D;
 };
 
 /** Shared geometry/materials keep large waves inexpensive. All dimensions use
@@ -134,7 +135,7 @@ export class UnitWorkshop {
     const group = (o: THREE.Group) => copies[originals.indexOf(o)] as THREE.Group;
     return {
       root, heading: group(prototype.heading), legs: prototype.legs.map(group),
-      turret: prototype.turret ? group(prototype.turret) : undefined,
+      turret: prototype.turret ? copies[originals.indexOf(prototype.turret)] : undefined,
       barrel: prototype.barrel ? group(prototype.barrel) : undefined,
       rotor: prototype.rotor ? group(prototype.rotor) : undefined,
       flash: prototype.flash ? copies[originals.indexOf(prototype.flash)] as THREE.Mesh : undefined,

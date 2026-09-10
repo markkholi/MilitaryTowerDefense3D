@@ -61,6 +61,7 @@ import {
 } from "./game-data";
 
 import { Battlefield3D } from "./battlefield-3d";
+import { MISSILE_DURATION, MISSILE_IMPACT_TIME } from "./missile-flight";
 import { BattleAudio, type SoundKey } from "./battle-audio";
 
 type Screen = "campaign" | "armoury" | "battle";
@@ -83,7 +84,7 @@ const UNIT_ART: Record<FamilyKey, { src: string; drawSize: number }> = {
   mg: { src: "./assets/mg-nest-topdown.png", drawSize: 76 },
   artillery: { src: "./assets/artillery-m777-topdown.png", drawSize: 86 },
   at: { src: "./assets/at-tow-topdown.png", drawSize: 76 },
-  air: { src: "./assets/air-defense-avenger-topdown.png", drawSize: 84 },
+  air: { src: "./assets/patriot/patriot-portrait.png", drawSize: 84 },
   airbase: { src: "./assets/defender-airbase-topdown.png", drawSize: 112 },
   tank: { src: "./assets/m1a1-abrams-topdown.png", drawSize: 82 },
 };
@@ -609,6 +610,9 @@ type Effect = {
   radius?: number;
   color?: string;
   triggered?: boolean;
+  weapon?: FamilyKey;
+  sourceId?: number;
+  altitude?: number;
 };
 
 type SmokeZone = { id: number; x: number; y: number; expires: number };
@@ -1852,7 +1856,8 @@ function Battle({
       let adjusted = piercing ? amount : Math.max(1, amount - enemy.armor * 3.15);
       if (splash) adjusted *= 1 - (ENEMIES[enemy.type].splashResist ?? 0);
       enemy.hp -= adjusted;
-      current.effects.push({ id: current.nextId++, type: "hit", x: enemy.x, y: enemy.y, age: 0, duration: 0.28 });
+      const patriotHit = source && typeof source !== "string" && source.family === "air";
+      current.effects.push({ id: current.nextId++, type: "hit", x: enemy.x, y: enemy.y, age: patriotHit ? -MISSILE_IMPACT_TIME : 0, duration: 0.28, altitude: patriotHit ? 57 : undefined });
       if (enemy.hp <= 0) rewardKill(enemy, source);
     }
 
@@ -2157,10 +2162,10 @@ function Battle({
             if (target && position.cooldown <= 0) {
               position.angle = Math.atan2(target.y - position.y, target.x - position.x);
               position.cooldown = stats.cooldown;
-              current.effects.push({ id: current.nextId++, type: "shot", x: position.x, y: position.y, tx: target.x, ty: target.y, age: 0, duration: 0.16, color: position.family === "air" ? "rgba(126,208,223,.95)" : undefined });
+              current.effects.push({ id: current.nextId++, type: "shot", x: position.x, y: position.y, tx: target.x, ty: target.y, age: 0, duration: position.family === "air" ? MISSILE_DURATION : 0.16, weapon: position.family, sourceId: position.id, color: position.family === "air" ? "rgba(126,208,223,.95)" : undefined });
               damageEnemy(target, stats.damage, family.pierce === true, position);
               if (stats.splash > 0) {
-                current.effects.push({ id: current.nextId++, type: "blast", x: target.x, y: target.y, age: 0, duration: 0.46, radius: stats.splash });
+                current.effects.push({ id: current.nextId++, type: "blast", x: target.x, y: target.y, age: position.family === "air" ? -MISSILE_IMPACT_TIME : 0, duration: 0.46, radius: stats.splash, altitude: position.family === "air" ? 57 : undefined });
                 current.enemies.forEach((nearby) => {
                   if (nearby.id !== target.id && !nearby.dead && distance(nearby, target) < stats.splash) {
                     const nearbyAir = ENEMIES[nearby.type].air === true;
