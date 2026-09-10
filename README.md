@@ -9,6 +9,7 @@ A separate 3D evolution of Military Tower Defense, built from the original game'
 - Air Defense uses the supplied textured MIM-104 Patriot model: weathered launcher, trailer, wheels, stabilizers, independently aiming mount, and missiles with exhaust trails and aerial impact effects. The build menu displays a portrait rendered from the same model.
 - Tanks use the supplied M1A2 Woodland Abrams model, with its detailed surface textures, independent turret, recoiling cannon, and muzzle flash. Hulls follow the road when deployed and retain their heading through upgrades.
 - AT Posts use the supplied anti-tank turret with its textured stabilizer base, independently aiming armored dome, recoiling barrel, and muzzle-origin firing effects. Full 2K surface maps preserve the painted metal and wear.
+- MG Nests use the supplied Auto Turret Machine Gun: full 4K surface textures, a stationary base, independent aiming, short gun recoil, and alternating flashes/tracers at its four barrels.
 - Directional lighting, soft shadows, textured terrain, raised battlefield edges, and 3D explosion debris.
 - Rotate, tilt, and zoom the camera; selection and placement follow the 3D view.
 - Distinct weapon bursts, cannon and artillery reports, missile launches, aircraft flybys, and propeller pulses, with stereo positioning, reverb, variation, and a shared output limiter.
@@ -46,7 +47,7 @@ npm start
 
 `dist/` is a standalone static build, suitable for GitHub Pages or another static host. Relative asset paths support hosting in a repository subdirectory. This repository does not deploy or update the original game's Site.
 
-See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air Defense, player tanks, and AT Posts use supplied detailed models; the remaining units are stylized interpretations of military roles. Original terrain artwork and the other UI portraits remain in use.
+See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air Defense, player tanks, AT Posts, and MG Nests use supplied detailed models; the remaining units are stylized interpretations of military roles. Original terrain artwork and the other UI portraits remain in use.
 
 ## Main files
 
@@ -59,7 +60,10 @@ See [validation coverage and playtest notes](docs/VALIDATION.md). Artillery, Air
 | `app/patriot-model.ts` | Patriot loading, independent instances, and asset cleanup |
 | `app/abrams-model.ts` | Abrams materials, turret and gun animation, and asset lifecycle |
 | `app/anti-tank-model.ts` | Anti-tank model loading, independent aiming and recoil, and asset lifecycle |
+| `app/machine-gun-model.ts` | Machine gun loading, four barrel markers, materials, and asset lifecycle |
 | `app/imported-gun-effects.ts` | Shared soft muzzle flash and outdoor reflection helpers |
 | `app/missile-flight.ts` | Air-defense missile flight and exhaust visuals |
 | `app/battle-audio.ts` | Procedural spatial sound effects and audio lifecycle |
 | `app/main.tsx` | Standalone React entry point |
+
+The Auto Turret Machine Gun model is by [NghiaNguyeen](https://sketchfab.com/kiroy2002), under CC BY 4.0. See [model attribution and adaptation details](public/assets/machine-gun/credits.html).

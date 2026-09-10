@@ -7,11 +7,14 @@ export type UnitModel = {
   turret?: THREE.Object3D;
   barrel?: THREE.Object3D;
   barrelRestX?: number;
+  recoilDistance?: number;
   legs: THREE.Group[];
   rotor?: THREE.Group;
   flash?: THREE.Mesh;
   launchOrigin?: THREE.Object3D;
   muzzle?: THREE.Object3D;
+  muzzles?: THREE.Object3D[];
+  flashes?: THREE.Mesh[];
 };
 
 /** Shared geometry/materials keep large waves inexpensive. All dimensions use

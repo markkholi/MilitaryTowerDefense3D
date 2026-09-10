@@ -7,8 +7,9 @@ import { PatriotModels, disposeModelResources } from "./patriot-model";
 import { MissileFlight } from "./missile-flight";
 import { AbramsModels } from "./abrams-model";
 import { AntiTankModels } from "./anti-tank-model";
+import { MachineGunModels } from "./machine-gun-model";
 
-type DrawEntry = { model: UnitModel; kind: string; rank: number; firedAt: number };
+type DrawEntry = { model: UnitModel; kind: string; rank: number; firedAt: number; lastShotId?: number; muzzleIndex?: number };
 type RangeStats = { range: number; minRange: number };
 
 export class Battlefield3D {
@@ -36,6 +37,7 @@ export class Battlefield3D {
   private patriots = new PatriotModels();
   private abrams = new AbramsModels();
   private antiTanks = new AntiTankModels();
+  private machineGuns = new MachineGunModels();
   private disposed = false;
 
   constructor(
@@ -76,6 +78,7 @@ export class Battlefield3D {
     void this.patriots.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     void this.abrams.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     void this.antiTanks.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
+    void this.machineGuns.load(Math.min(16, this.renderer.capabilities.getMaxAnisotropy()));
     const ctx = overlayCanvas.getContext("2d");
     if (!ctx) throw new Error("The tactical overlay could not start.");
     this.overlay = ctx;
@@ -202,8 +205,8 @@ export class Battlefield3D {
   private entity(key: string, kind: string, enemy: boolean, rank: number, point: Point, altitude = 0) {
     let entry = this.entities.get(key);
     let previousHeading: THREE.Euler | undefined;
-    const library = !enemy ? kind === "air" ? this.patriots : kind === "tank" ? this.abrams : kind === "at" ? this.antiTanks : null : null;
-    const detailFlag = kind === "tank" ? "abrams" : kind === "at" ? "antiTank" : "patriot";
+    const library = !enemy ? kind === "air" ? this.patriots : kind === "tank" ? this.abrams : kind === "at" ? this.antiTanks : kind === "mg" ? this.machineGuns : null : null;
+    const detailFlag = kind === "tank" ? "abrams" : kind === "at" ? "antiTank" : kind === "mg" ? "machineGun" : "patriot";
     if (entry && (entry.kind !== kind || entry.rank !== rank)) {
       previousHeading = entry.model.heading.rotation.clone();
       this.scene.remove(entry.model.root); this.entities.delete(key); entry = undefined;
@@ -283,10 +286,19 @@ export class Battlefield3D {
       if (position.moving) model.heading.rotation.y = -Math.atan2(position.moving.to.y - position.moving.from.y, position.moving.to.x - position.moving.from.x);
       if (model.turret) model.turret.rotation.y = -position.angle - model.heading.rotation.y;
       if (model.rotor) model.rotor.rotation.y = game.gameTime * 2;
-      const shot = game.effects.some(f => f.type === "shot" && f.age < .07 && Math.hypot(f.x - position.x, f.y - position.y) < 8);
-      if (shot) e.firedAt = game.gameTime;
+      const shot = game.effects.find(f => f.type === "shot" && f.age >= 0 && f.age < .07 &&
+        (f.sourceId !== undefined ? f.sourceId === position.id : Math.hypot(f.x - position.x, f.y - position.y) < 8));
+      if (shot && shot.id !== e.lastShotId) {
+        e.lastShotId = shot.id; e.firedAt = game.gameTime - shot.age;
+        if (model.muzzles?.length && model.flashes?.length) {
+          model.flashes.forEach(flash => { flash.visible = false; });
+          const barrelIndex = ((e.muzzleIndex ?? -1) + 1) % model.muzzles.length;
+          e.muzzleIndex = barrelIndex;
+          model.muzzle = model.muzzles[barrelIndex]; model.flash = model.flashes[barrelIndex];
+        }
+      }
       const recoil = Math.max(0, 1 - (game.gameTime - e.firedAt) / .22);
-      if (model.barrel) model.barrel.position.x = (model.barrelRestX ?? (position.family === "tank" ? 8 : 0)) - recoil * 3;
+      if (model.barrel) model.barrel.position.x = (model.barrelRestX ?? (position.family === "tank" ? 8 : 0)) - recoil * (model.recoilDistance ?? 3);
       if (model.flash) model.flash.visible = game.gameTime - e.firedAt < .075;
     }
     for (const enemy of game.enemies) {
@@ -460,10 +472,11 @@ export class Battlefield3D {
     this.disposed = true;
     this.observer.disconnect(); this.canvas.removeEventListener("wheel", this.onWheel);
     // Imported clones share their resources with a prototype owned by the library.
-    for (const entry of this.entities.values()) if (entry.model.root.userData.patriot || entry.model.root.userData.abrams || entry.model.root.userData.antiTank) this.scene.remove(entry.model.root);
+    for (const entry of this.entities.values()) if (entry.model.root.userData.patriot || entry.model.root.userData.abrams || entry.model.root.userData.antiTank || entry.model.root.userData.machineGun) this.scene.remove(entry.model.root);
     this.patriots.dispose();
     this.abrams.dispose();
     this.antiTanks.dispose();
+    this.machineGuns.dispose();
     this.scene.traverse(object => {
       if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
         object.geometry.dispose();

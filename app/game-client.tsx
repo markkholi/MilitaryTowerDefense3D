@@ -81,7 +81,7 @@ type SaveData = {
 const SAVE_KEY = "military-tower-defense-3d-save-v1";
 
 const UNIT_ART: Record<FamilyKey, { src: string; drawSize: number }> = {
-  mg: { src: "./assets/mg-nest-topdown.png", drawSize: 76 },
+  mg: { src: "./assets/machine-gun/machine-gun-portrait.png", drawSize: 76 },
   artillery: { src: "./assets/artillery-m777-topdown.png", drawSize: 86 },
   at: { src: "./assets/anti-tank/anti-tank-portrait.png", drawSize: 76 },
   air: { src: "./assets/patriot/patriot-portrait.png", drawSize: 84 },
@@ -2867,6 +2867,7 @@ function Battle({
             <div><span>07</span><p><strong>Fortify command.</strong> Tap the HQ to install sentries, counter-air missiles, and a fortress defense network.</p></div>
             <div><span>08</span><p><strong>Hold beyond the mission.</strong> Every cleared map can continue immediately in infinite mode.</p></div>
           </div>
+          <p className="text-xs text-muted-foreground"><a href="./assets/machine-gun/credits.html" target="_blank" rel="noreferrer" className="underline">Machine gun model credit and license</a></p>
         </DialogContent>
       </Dialog>
 

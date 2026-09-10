@@ -13,7 +13,7 @@ The original `app/game-client.tsx` simulation and `app/game-data.ts` campaign de
 
 MTD3D replaces battlefield sprites with locally generated Three.js meshes and replaces the original per-sound audio routing with a shared spatial mix. Artillery additionally uses the supplied 152mm M-10 Howitzer OBJ as a detailed hero mesh, with a procedural fallback. Its four supplied texture JPGs are retained alongside the model; the OBJ's absent MTL is intentionally replaced by authored physically based materials. MTD3D uses a standalone React/Vite entry point instead of the original Sites server runtime. Some unused starter components and server template files remain from the original source, but the MTD3D build uses `app/main.tsx` and `vite.config.ts` and requires no server, database, or ChatGPT account.
 
-New unit meshes other than artillery, Air Defense, player tanks, and AT Posts are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
+New unit meshes other than artillery, Air Defense, player tanks, AT Posts, and MG Nests are stylized, authored geometry. They distinguish military roles, but are not exact scale reconstructions of every named historical weapon. The M-10 source OBJ was copied from the separate local MilTowerDefense folder at the owner's request; the original ZIP archive was not redistributed.
 
 ## Supplied MIM-104 Patriot model
 
@@ -57,6 +57,20 @@ Reproduction requires Python with NumPy and Pillow:
 
 ```sh
 python scripts/prepare-anti-tank.py "path/to/anti-tank-turret.zip"
+```
+
+## Supplied Auto Turret Machine Gun
+
+The owner supplied `auto_turret_machine_gun.glb`, whose embedded metadata credits [Auto Turret Machine Gun](https://sketchfab.com/3d-models/auto-turret-machine-gun-1f186169b31d44c7bdf874f97508b340) by [NghiaNguyeen](https://sketchfab.com/kiroy2002), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The original credit remains in the GLB and is available through the game's Field manual. The menu portrait is rendered from the adapted model.
+
+`scripts/prepare-machine-gun.mjs` adapts the hierarchy for a grounded, 54-unit-long emplacement with a fixed base, independently aiming upper assembly, and recoiling gun cluster. Four markers are centered on the actual barrel mouths, alternating per shot independently of global effect IDs. The source showcase animation is replaced by live game targeting and short recoil. Existing MG costs, damage, firing cadence, and historical upgrade names are retained.
+
+All 7,556 triangles, normals, tangents, UV channels, materials, and three embedded 4096 × 4096 textures are preserved. The complete source binary payload is byte-identical in the adapted GLB; no resampling, recoloring, or geometry simplification is applied. The runtime supplies filtered texture sampling, shadows, outdoor reflections, and a small muzzle flash. Instances share the asset resources while their aiming, recoil, and active firing point remain independent. The GLB is approximately 31.4 MB; the original file in Downloads is unchanged.
+
+Reproduce the adaptation with Node.js:
+
+```sh
+node scripts/prepare-machine-gun.mjs "path/to/auto_turret_machine_gun.glb"
 ```
 
 Original assets retain their existing ownership and terms; this repository does not grant a new license to third-party material. Three.js and other libraries retain their respective licenses. New sound effects are synthesized at runtime and contain no downloaded recordings.
