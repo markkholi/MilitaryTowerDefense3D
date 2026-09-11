@@ -4,6 +4,8 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 export type UnitModel = {
   root: THREE.Group;
   heading: THREE.Group;
+  walk?: (distance: number, moving: boolean) => void;
+  release?: () => void;
   turret?: THREE.Object3D;
   barrel?: THREE.Object3D;
   barrelRestX?: number;

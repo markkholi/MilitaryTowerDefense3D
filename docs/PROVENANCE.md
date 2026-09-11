@@ -98,3 +98,14 @@ Original assets retain their existing ownership and terms; this repository does 
 - Runtime adaptation centers the aircraft, rotates its nose to +X, and scales its length to 52 game units. Shared environment lighting and anisotropic filtering complement the supplied materials; transparent canopy materials do not write depth.
 - Interceptor, multirole and strike sorties share geometry/materials with independent flight transforms. Gunships and enemy bombers keep their existing models. No combat statistics changed.
 - The flight-line portrait is rendered from this asset. Credit is linked from the Field manual at public/assets/fighter/credits.html.
+
+## Enemy soldier model (September 11, 2026)
+
+- User-supplied scifi_soldier_character_low-poly.glb, titled SciFi Soldier Character Low-poly.
+- Author: [Polly Hermiston](https://sketchfab.com/Polly_Hermiston).
+- [Original model](https://sketchfab.com/3d-models/scifi-soldier-character-low-poly-6c53691fa07e46aca890c771940b3651), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), per the supplied asset metadata.
+- public/assets/soldier/scifi-soldier.glb is byte-identical to the source: SHA-256 ccae12e537f0069c72e11bbb9b18c1424c471767557a9a457006267613ee097e. Three meshes/materials, 33,792 triangles and all three embedded textures are retained.
+- The source has no skeleton or animation clips. Runtime adaptation normalizes height to 28 units and forward to +X, adds five bones with blended leg weights, and leaves rifle vertices attached to the upper body. Each enemy owns its skeleton; geometry, materials and textures are shared. Walking follows traveled distance, stops while stationary and freezes on pause.
+- Material tuning reduces the source's default fully metallic response for painted armor and fabric; environment lighting and anisotropic filtering preserve visible surface detail.
+- Infantry, swarmlings, slingers and brutes use this asset. Brutes retain 1.25 scale and swarmlings .8 scale. Combat behavior, health, weapons and rewards are unchanged.
+- The portrait is rendered from the model. Credit is linked from the Field manual at public/assets/soldier/credits.html.

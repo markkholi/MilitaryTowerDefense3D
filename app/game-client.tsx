@@ -2867,7 +2867,7 @@ function Battle({
             <div><span>07</span><p><strong>Fortify command.</strong> Tap the HQ to install sentries, counter-air missiles, and a fortress defense network.</p></div>
             <div><span>08</span><p><strong>Hold beyond the mission.</strong> Every cleared map can continue immediately in infinite mode.</p></div>
           </div>
-          <p className="text-xs text-muted-foreground"><a href="./assets/machine-gun/credits.html" target="_blank" rel="noreferrer" className="underline">Machine gun model credit and license</a> · <a href="./assets/artillery/credits.html" target="_blank" rel="noreferrer" className="underline">Artillery model credit and license</a> · <a href="./assets/fighter/credits.html" target="_blank" rel="noreferrer" className="underline">Fighter model credit and license</a></p>
+          <p className="text-xs text-muted-foreground"><a href="./assets/machine-gun/credits.html" target="_blank" rel="noreferrer" className="underline">Machine gun model credit and license</a> · <a href="./assets/artillery/credits.html" target="_blank" rel="noreferrer" className="underline">Artillery model credit and license</a> · <a href="./assets/fighter/credits.html" target="_blank" rel="noreferrer" className="underline">Fighter model credit and license</a> · <a href="./assets/soldier/credits.html" target="_blank" rel="noreferrer" className="underline">Enemy soldier model credit and license</a></p>
         </DialogContent>
       </Dialog>
 
