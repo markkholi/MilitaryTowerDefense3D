@@ -10,7 +10,7 @@
     "build": "tsc -p tsconfig.game.json && vite build",
     "start": "vite preview --host 127.0.0.1",
     "test": "node --experimental-strip-types --test tests/game-*.test.mjs",
-    "lint": "eslint app/game-client.tsx app/game-data.ts app/battlefield-3d.ts app/unit-models.ts app/patriot-model.ts app/abrams-model.ts app/anti-tank-model.ts app/machine-gun-model.ts app/artillery-model.ts app/imported-gun-effects.ts app/missile-flight.ts app/battle-audio.ts app/main.tsx"
+    "lint": "eslint app/game-client.tsx app/game-data.ts app/battlefield-3d.ts app/unit-models.ts app/patriot-model.ts app/abrams-model.ts app/anti-tank-model.ts app/machine-gun-model.ts app/artillery-model.ts app/fighter-model.ts app/imported-gun-effects.ts app/missile-flight.ts app/battle-audio.ts app/main.tsx"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

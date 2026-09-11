@@ -10,6 +10,7 @@ A separate 3D evolution of Military Tower Defense, built from the original game'
 - Tanks use the supplied M1A2 Woodland Abrams model, with its detailed surface textures, independent turret, recoiling cannon, and muzzle flash. Hulls follow the road when deployed and retain their heading through upgrades.
 - AT Posts use the supplied anti-tank turret with its textured stabilizer base, independently aiming armored dome, recoiling barrel, and muzzle-origin firing effects. Full 2K surface maps preserve the painted metal and wear.
 - MG Nests use the supplied Auto Turret Machine Gun: full 4K surface textures, a stationary base, independent aiming, short gun recoil, and alternating flashes/tracers at its four barrels.
+- Airport interceptor, multirole, and strike sorties use the supplied F-16D Block 60, preserving its cockpit, markings, weapons, and all eighteen textures. Flight-line portraits use the same model.
 - Directional lighting, soft shadows, textured terrain, raised battlefield edges, and 3D explosion debris.
 - Rotate, tilt, and zoom the camera; selection and placement follow the 3D view.
 - Distinct weapon bursts, cannon and artillery reports, missile launches, aircraft flybys, and propeller pulses, with stereo positioning, reverb, variation, and a shared output limiter.

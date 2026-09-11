@@ -88,3 +88,13 @@ node scripts/prepare-artillery.mjs "path/to/artillery_military_weapon.glb"
 ```
 
 Original assets retain their existing ownership and terms; this repository does not grant a new license to third-party material. Three.js and other libraries retain their respective licenses. New sound effects are synthesized at runtime and contain no downloaded recordings.
+
+## F-16 fighter model (September 11, 2026)
+
+- Source: user-supplied general_dynamics_f-16d_block_60.glb; titled General Dynamics F-16D Block 60.
+- Author: [Muhamad Mirza Arrafi](https://sketchfab.com/nazidefenseforceofficial).
+- [Original model](https://sketchfab.com/3d-models/general-dynamics-f-16d-block-60-ea8edb08d79e4eafa9c794c581f88cf3), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), as recorded in the supplied GLB metadata.
+- Public asset: public/assets/fighter/f-16d-block-60.glb. It is byte-identical to the source: SHA-256 0dbf18dfa7b3b2bf91a0bd1ced45beb158247da165850e611718776c8f1fc9d6. All 61,543 triangles, 22 meshes, 18 materials and 18 embedded textures are retained, including the authored landing gear pose.
+- Runtime adaptation centers the aircraft, rotates its nose to +X, and scales its length to 52 game units. Shared environment lighting and anisotropic filtering complement the supplied materials; transparent canopy materials do not write depth.
+- Interceptor, multirole and strike sorties share geometry/materials with independent flight transforms. Gunships and enemy bombers keep their existing models. No combat statistics changed.
+- The flight-line portrait is rendered from this asset. Credit is linked from the Field manual at public/assets/fighter/credits.html.
