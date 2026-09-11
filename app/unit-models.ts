@@ -5,6 +5,7 @@ export type UnitModel = {
   root: THREE.Group;
   heading: THREE.Group;
   walk?: (distance: number, moving: boolean) => void;
+  roll?: (distance: number) => void;
   release?: () => void;
   turret?: THREE.Object3D;
   barrel?: THREE.Object3D;

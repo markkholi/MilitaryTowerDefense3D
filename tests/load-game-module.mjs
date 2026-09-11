@@ -4,7 +4,7 @@ import ts from 'typescript';
 // Transpile only the pure game modules; tests run in Node without a browser.
 const output = new URL(`../outputs/test-modules-${process.pid}/`, import.meta.url);
 fs.mkdirSync(output, { recursive: true });
-const modules = ['game-data', 'unit-models', 'patriot-model', 'imported-gun-effects', 'abrams-model', 'anti-tank-model', 'machine-gun-model', 'artillery-model', 'fighter-model', 'soldier-model', 'missile-flight', 'battlefield-3d', 'battle-audio'];
+const modules = ['game-data', 'unit-models', 'patriot-model', 'imported-gun-effects', 'abrams-model', 'anti-tank-model', 'machine-gun-model', 'artillery-model', 'fighter-model', 'soldier-model', 'truck-model', 'missile-flight', 'battlefield-3d', 'battle-audio'];
 const localImports = new RegExp(`from "\\./(${modules.join('|')})"`, 'g');
 for (const name of modules) {
   const source = fs.readFileSync(new URL(`../app/${name}.ts`, import.meta.url), 'utf8');

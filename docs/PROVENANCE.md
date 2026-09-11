@@ -109,3 +109,13 @@ Original assets retain their existing ownership and terms; this repository does 
 - Material tuning reduces the source's default fully metallic response for painted armor and fabric; environment lighting and anisotropic filtering preserve visible surface detail.
 - Infantry, swarmlings, slingers and brutes use this asset. Brutes retain 1.25 scale and swarmlings .8 scale. Combat behavior, health, weapons and rewards are unchanged.
 - The portrait is rendered from the model. Credit is linked from the Field manual at public/assets/soldier/credits.html.
+
+## Enemy Gurkha truck (September 11, 2026)
+
+- User-supplied terradyne_gurkha_military_truck_game_model.glb, titled Terradyne Gurkha Military Truck Game Model.
+- Author: [Heber Soto](https://sketchfab.com/hebsoto).
+- [Original model](https://sketchfab.com/3d-models/terradyne-gurkha-military-truck-game-model-7e2d38b2002741c383ea2009e3f8f76a), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), per supplied metadata.
+- public/assets/truck/gurkha.glb retains every source byte: SHA-256 1d6b1bd90ef06a390b647dc547f993f617366f33edde181938170e4159352960. It contains 38,856 triangles, 25 meshes, 16 materials and 46 embedded images.
+- Runtime adaptation normalizes length to 44 game units, seats tires on the road, points the nose along +X and adds axle pivots to the four existing wheel assemblies. Rotation follows traveled distance divided by wheel radius. Each instance owns its transforms and shares geometry/materials/textures.
+- Existing PBR maps are retained with anisotropic filtering and environment lighting. Only enemy Scouts change model; tracked Bulwarks and Siege Columns retain theirs. No combat statistics changed.
+- The portrait is rendered from the asset. Credit is linked from the Field manual at public/assets/truck/credits.html.
